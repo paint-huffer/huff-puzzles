@@ -13,5 +13,31 @@
 
 
 #define macro MAIN() = takes(0) returns(0) {
+    0x00 calldataload
+    0xE0 shr
+    __FUNC_SIG(multiply) eq performMul jumpi
 
+    0x00 0x00 revert
+
+    performMul:
+        0x04 calldataload
+        0x24 calldataload
+        PERFORM_MUL()
+}
+
+#define macro PERFORM_MUL() = takes(2) returns(0) {
+    dup2 // doesn't handle div by zero hehe
+    dup2 // [ b, a, b, a ]
+    mul // [ c, b, a ]
+    dup1 // [ c, c, b, a ]
+    swap2 swap1 // [ c, b, c, a ]
+    div // [ c/b, c, a ]
+    swap1 swap2 // [ a, c/b, c ]
+    eq correct jumpi
+
+    0x00 0x00 revert
+
+    correct:
+        push0 mstore
+        0x20 0x00 return
 }
